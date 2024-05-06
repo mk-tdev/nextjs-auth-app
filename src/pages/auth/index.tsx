@@ -1,9 +1,10 @@
-import { signIn } from "next-auth/react";
+import { signIn, getSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
   const handleAuth = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -20,11 +21,11 @@ const Auth = () => {
         email: formValues.email,
         password: formValues.password,
       });
-      console.log(result);
+
       if (result?.error) {
         console.error(result.error);
       } else {
-        router.push("/profile");
+        router.replace("/profile");
       }
     } else {
       try {
@@ -49,9 +50,20 @@ const Auth = () => {
       }
     }
   };
+
   useEffect(() => {
-    //
-  }, []);
+    getSession().then((session) => {
+      if (session) {
+        router.replace("/");
+      } else {
+        setIsLoading(false);
+      }
+    });
+  }, [router]);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <>

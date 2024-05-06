@@ -2,10 +2,17 @@ import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { connectToDB } from "../../../../lib/db";
 import { verifyPassword } from "../../../../lib/auth";
+import type { NextAuthOptions } from "next-auth";
 
-export default NextAuth({
+export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
+  },
+  secret: process.env.NEXTAUTH_SECRET,
+  callbacks: {
+    async session({ session, token }) {
+      return session;
+    },
   },
   providers: [
     CredentialsProvider({
@@ -13,7 +20,6 @@ export default NextAuth({
       async authorize(credentials: any) {
         // Add logic to verify user credentials
         const { email, password } = credentials as any;
-        console.log(credentials);
 
         const client = await connectToDB();
         const db = client.db();
@@ -39,4 +45,6 @@ export default NextAuth({
       },
     } as any),
   ],
-});
+};
+
+export default NextAuth(authOptions);
